@@ -8,5 +8,9 @@ dialog{width:min(640px,calc(100% - 28px));max-height:min(92dvh,850px);overflow:a
 
 .card-examples{display:flex;flex-direction:column;gap:8px;margin-top:15px;color:#dce5ff;font-size:.87rem;line-height:1.5}
 .example-sense{font-weight:700;margin-top:4px}
-.example-sentence{display:grid;grid-template-columns:1.15em 1fr;gap:5px}
-.example-sentence::before{content:'★';color:#f8e86a}
+.example-sentence{display:block;padding-left:1.35em;text-indent:-1.35em}
+.example-sentence::before{content:'★ ';color:inherit}
+.related-section{display:block}
+.related-section+.related-section{margin-top:9px}
+.related-heading,.related-words{display:block}
+.related-heading{font-weight:700}

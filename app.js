@@ -134,6 +134,42 @@
     card.append(examples);
   }
 
+  function addRelated(card, value) {
+    if (!value) return;
+    const sections = [];
+    for (const line of value.split(/\r?\n/).map(clean).filter(Boolean)) {
+      if (/^(?:syn(?:onyms?)?|ant(?:onyms?)?)\s*:?[.]?$/i.test(line)) {
+        sections.push({ heading: line, words: [] });
+      } else {
+        if (!sections.length) sections.push({ heading: '', words: [] });
+        sections[sections.length - 1].words.push(
+          ...line.split(/[,;|]/).map(clean).filter(Boolean)
+        );
+      }
+    }
+    if (!sections.length) return;
+    const related = document.createElement('span');
+    related.className = 'card-related';
+    for (const section of sections) {
+      const block = document.createElement('span');
+      block.className = 'related-section';
+      if (section.heading) {
+        const heading = document.createElement('span');
+        heading.className = 'related-heading';
+        heading.textContent = section.heading;
+        block.append(heading);
+      }
+      if (section.words.length) {
+        const words = document.createElement('span');
+        words.className = 'related-words';
+        words.textContent = section.words.join(' | ');
+        block.append(words);
+      }
+      related.append(block);
+    }
+    card.append(related);
+  }
+
   function addBackLine(card, className, value) {
     if (!value) return;
     const element = document.createElement('span');
@@ -171,7 +207,7 @@
         } else {
           addBackLine(card, 'card-pos', entry.partOfSpeech);
           addBackLine(card, 'card-definition', entry.definition);
-          addBackLine(card, 'card-related', entry.related);
+          addRelated(card, entry.related);
           addExamples(card, entry.example);
         }
       });
