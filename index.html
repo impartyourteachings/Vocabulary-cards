@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173db5">
+  <meta name="description" content="Practice vocabulary with word cards organized by day.">
+  <title>Wordplay · Vocabulary cards</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23173db5'/%3E%3Cpath d='M12 19l8 29h8l5-19 5 19h8l8-29h-8l-4 19-5-19h-8l-5 19-4-19z' fill='%23f8e86a'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Wordplay home"><span class="brand-mark">W</span><span>wordplay<span class="brand-dot">.</span></span></a>
+      <button class="teacher-link" id="open-setup" type="button">Spreadsheet settings <span aria-hidden="true">↗</span></button>
+    </header>
+
+    <main class="main-grid">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="eyebrow"><span class="eyebrow-line"></span> VOCABULARY, ONE DAY AT A TIME</div>
+        <h1 id="page-title">Words to <em>remember.</em></h1>
+        <p>Choose a day. Tap any word to reveal its meaning and example.</p>
+      </section>
+      <section class="study-area" aria-labelledby="days-heading">
+        <div class="study-head"><div><p class="section-kicker">STUDY BY DAY</p><h2 id="days-heading">Choose a day</h2></div><p id="source-note">Example words</p></div>
+        <div class="day-tabs" id="day-tabs" role="group" aria-label="Choose a day"></div>
+        <div class="day-heading"><h3 id="current-day"></h3><span id="day-date"></span><span id="word-count"></span></div>
+        <div class="cards-grid" id="cards-grid" aria-live="polite"></div>
+      </section>
+    </main>
+    <footer><span>Open a card to see the definition. Open it again to return to the word.</span><span id="footer-source">Example words</span></footer>
+  </div>
+
+  <dialog id="setup-dialog" aria-labelledby="setup-title">
+    <div class="dialog-head"><span class="dialog-kicker">FOR TEACHERS</span><button id="close-setup" class="icon-button" type="button" aria-label="Close">×</button></div>
+    <h2 id="setup-title">Your live word list.</h2>
+    <p>This game reads your Google Sheet when the page opens. Add or edit words there, then refresh the game to see the changes.</p>
+    <ol class="steps">
+      <li><span>01</span><div><strong>Keep your current layout</strong><p>Put each new date on its own row in column <b>A</b>. Below it, use <b>B</b> for word, <b>C</b> for part of speech, <b>D</b> for definition, <b>E</b> for synonyms or antonyms, and <b>F</b> for examples. A word appears once it has a definition.</p></div></li>
+      <li><span>02</span><div><strong>Allow viewing</strong><p>In Google Sheets, choose <b>Share → General access → Anyone with the link → Viewer</b>. Use only vocabulary content you want students to see.</p></div></li>
+      <li><span>03</span><div><strong>Use this Sheet</strong><p>The supplied Sheet is already connected. You can paste another tab or spreadsheet link below if you want to change the source later.</p></div></li>
+    </ol>
+    <form id="sheet-form">
+      <label for="sheet-url">Google Sheet links</label>
+      <div class="input-row"><textarea id="sheet-url" rows="3" placeholder="https://docs.google.com/spreadsheets/d/…&#10;https://docs.google.com/spreadsheets/d/…" required></textarea><button type="submit" id="load-button">Load words</button></div>
+      <p class="form-status" id="form-status" role="status"></p>
+    </form>
+    <div class="share-box" id="share-box" hidden><strong>Your student link is ready</strong><p>Send this link to your students. When you edit the Sheet, they will see the updated cards when they refresh the page.</p><div class="share-row"><input id="share-url" readonly aria-label="Student link"><button id="copy-link" type="button">Copy link</button></div></div>
+  </dialog>
+</body>
+</html>
