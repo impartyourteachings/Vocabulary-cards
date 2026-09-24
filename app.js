@@ -121,6 +121,20 @@
     return pieces;
   }
 
+  function appendBoldText(parent, value) {
+    const marked = /\*\*(.+?)\*\*/g;
+    let offset = 0;
+    for (const match of value.matchAll(marked)) {
+      if (match.index > offset) parent.append(document.createTextNode(value.slice(offset, match.index)));
+      const bold = document.createElement('strong');
+      bold.className = 'example-keyword';
+      bold.textContent = match[1];
+      parent.append(bold);
+      offset = match.index + match[0].length;
+    }
+    if (offset < value.length) parent.append(document.createTextNode(value.slice(offset)));
+  }
+
   function addExamples(card, value) {
     if (!value) return;
     const examples = document.createElement('span');
@@ -128,10 +142,38 @@
     for (const piece of splitExamples(value)) {
       const line = document.createElement('span');
       line.className = piece.type === 'sense' ? 'example-sense' : 'example-sentence';
-      line.textContent = piece.text;
+      if (piece.type === 'sentence') appendBoldText(line, piece.text);
+      else line.textContent = piece.text;
       examples.append(line);
     }
     card.append(examples);
+  }
+
+  function addDefinition(card, value) {
+    if (!value) return;
+    const markers = [...value.matchAll(/(^|\n)\s*(\(\d+\))\s*/g)];
+    if (!markers.length) return addBackLine(card, 'card-definition', value);
+    const definition = document.createElement('span');
+    definition.className = 'card-definition definition-list';
+    const opening = value.slice(0, markers[0].index).trim();
+    if (opening) {
+      const intro = document.createElement('span');
+      intro.textContent = opening;
+      definition.append(intro);
+    }
+    markers.forEach((marker, index) => {
+      const sense = document.createElement('span');
+      sense.className = 'definition-sense';
+      const number = document.createElement('span');
+      number.className = 'definition-number';
+      number.textContent = marker[2];
+      const text = document.createElement('span');
+      text.textContent = value.slice(marker.index + marker[0].length,
+        markers[index + 1]?.index ?? value.length).trim();
+      sense.append(number, text);
+      definition.append(sense);
+    });
+    card.append(definition);
   }
 
   function addRelated(card, value) {
@@ -192,21 +234,31 @@
       card.type = 'button';
       card.className = 'word-card';
       card.setAttribute('aria-expanded', 'false');
-      card.setAttribute('aria-label', `Reveal the definition of ${entry.word}`);
+      const [mainWord, ...wordDetails] = entry.word.split(/\r?\n/).map(clean).filter(Boolean);
+      card.setAttribute('aria-label', `Reveal the definition of ${mainWord}`);
       const front = document.createElement('span');
       front.className = 'card-word';
-      front.textContent = entry.word;
+      const title = document.createElement('span');
+      title.className = 'card-word-main';
+      title.textContent = mainWord;
+      front.append(title);
+      if (wordDetails.length) {
+        const detail = document.createElement('span');
+        detail.className = 'card-word-detail';
+        detail.textContent = wordDetails.join(' · ');
+        front.append(detail);
+      }
       card.append(front);
       card.addEventListener('click', () => {
         const open = card.getAttribute('aria-expanded') === 'true';
         card.setAttribute('aria-expanded', String(!open));
-        card.setAttribute('aria-label', open ? `Reveal the definition of ${entry.word}` : `Hide the definition of ${entry.word}`);
+        card.setAttribute('aria-label', open ? `Reveal the definition of ${mainWord}` : `Hide the definition of ${mainWord}`);
         card.replaceChildren();
         if (open) {
           card.append(front);
         } else {
           addBackLine(card, 'card-pos', entry.partOfSpeech);
-          addBackLine(card, 'card-definition', entry.definition);
+          addDefinition(card, entry.definition);
           addRelated(card, entry.related);
           addExamples(card, entry.example);
         }
