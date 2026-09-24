@@ -94,22 +94,44 @@
     return entries;
   }
 
-  // Keep separate example sentences; join line breaks inserted to fit a Sheet cell.
-  function tidyExamples(value) {
+  // Join visual line wraps, then mark each example sentence separately.
+  // Existing stars are accepted, but the Sheet no longer needs to contain them.
+  function splitExamples(value) {
     const pieces = [];
     let current = '';
+    const finish = () => {
+      if (current) pieces.push({ type: 'sentence', text: current });
+      current = '';
+    };
     for (const line of value.split(/\r?\n/).map(clean)) {
       if (!line) {
-        if (current) { pieces.push(current); current = ''; }
-      } else if (/^(★|\(\d+\))/.test(line)) {
-        if (current) pieces.push(current);
-        current = line;
+        finish();
+      } else if (/^\(\d+\)$/.test(line)) {
+        finish();
+        pieces.push({ type: 'sense', text: line });
+      } else if (line.startsWith('★')) {
+        finish();
+        current = clean(line.replace(/^★\s*/, ''));
       } else {
+        if (/[.!?][”"')\]]*$/.test(current)) finish();
         current += (current ? ' ' : '') + line;
       }
     }
-    if (current) pieces.push(current);
-    return pieces.join('\n');
+    finish();
+    return pieces;
+  }
+
+  function addExamples(card, value) {
+    if (!value) return;
+    const examples = document.createElement('span');
+    examples.className = 'card-examples';
+    for (const piece of splitExamples(value)) {
+      const line = document.createElement('span');
+      line.className = piece.type === 'sense' ? 'example-sense' : 'example-sentence';
+      line.textContent = piece.text;
+      examples.append(line);
+    }
+    card.append(examples);
   }
 
   function addBackLine(card, className, value) {
@@ -150,7 +172,7 @@
           addBackLine(card, 'card-pos', entry.partOfSpeech);
           addBackLine(card, 'card-definition', entry.definition);
           addBackLine(card, 'card-related', entry.related);
-          addBackLine(card, 'card-example', tidyExamples(entry.example));
+          addExamples(card, entry.example);
         }
       });
       return card;
