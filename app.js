@@ -151,25 +151,22 @@
 
   function addDefinition(card, value) {
     if (!value) return;
-    const markers = [...value.matchAll(/(^|\n)\s*(\(\d+\))\s*/g)];
-    if (!markers.length) return addBackLine(card, 'card-definition', value);
+    const senses = value.replace(/\r\n?/g, '\n').trim()
+      .split(/\n\s*\n+/)
+      .flatMap(block => block.split(/(?=^\s*(?:\(\d+\)|\d+[.)])\s+)/m))
+      .map(clean).filter(Boolean);
+    const numbered = senses.some(sense => /^(?:\(\d+\)|\d+[.)])\s+/.test(sense));
+    if (senses.length === 1 && !numbered) return addBackLine(card, 'card-definition', value);
     const definition = document.createElement('span');
     definition.className = 'card-definition definition-list';
-    const opening = value.slice(0, markers[0].index).trim();
-    if (opening) {
-      const intro = document.createElement('span');
-      intro.textContent = opening;
-      definition.append(intro);
-    }
-    markers.forEach((marker, index) => {
+    senses.forEach((senseText, index) => {
       const sense = document.createElement('span');
       sense.className = 'definition-sense';
       const number = document.createElement('span');
       number.className = 'definition-number';
-      number.textContent = marker[2];
+      number.textContent = String(index + 1);
       const text = document.createElement('span');
-      text.textContent = value.slice(marker.index + marker[0].length,
-        markers[index + 1]?.index ?? value.length).trim();
+      text.textContent = senseText.replace(/^(?:\(\d+\)|\d+[.)])\s*/, '').trim();
       sense.append(number, text);
       definition.append(sense);
     });
