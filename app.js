@@ -162,7 +162,7 @@
       if (section.words.length) {
         const words = document.createElement('span');
         words.className = 'related-words';
-        words.textContent = section.words.join(' | ');
+        words.textContent = section.words.join(' · ');
         block.append(words);
       }
       related.append(block);
